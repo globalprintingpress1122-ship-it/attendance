@@ -9,7 +9,7 @@ header{display:flex;justify-content:space-between;align-items:center;margin-bott
 .brand{font-weight:800;font-size:19px}.brand span{color:var(--acc)}
 #clock{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}#clock small{display:block;color:var(--mut);font-weight:400;font-size:12px}
 nav{display:flex;gap:6px;background:var(--card);padding:5px;border-radius:14px;margin-bottom:14px}
-nav button{flex:1;padding:10px;border:0;border-radius:10px;background:none;color:var(--mut);font-weight:600;font-size:14px}
+nav button{flex:1;padding:10px 2px;border:0;border-radius:10px;background:none;color:var(--mut);font-weight:600;font-size:12.5px}
 nav button.on{background:var(--acc);color:#fff}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
 .grid{display:grid;gap:14px;grid-template-columns:1fr}@media(min-width:760px){.grid.two{grid-template-columns:1.1fr 1fr}}
@@ -35,10 +35,10 @@ h2{font-size:21px}.mut{color:var(--mut);font-size:13px}.big{font-size:17px;font-
 form,.f{display:grid;grid-template-columns:1fr 1fr;gap:10px}.f .full{grid-column:1/-1}
 label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
 input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0e1429;color:var(--txt);font-size:15px}
-.hide{display:none}#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111a38;border:1px solid var(--acc);padding:10px 18px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;z-index:9}#toast.show{opacity:1}
+.f3{display:grid;grid-template-columns:1fr 1fr;gap:8px}.f3 div:last-child{grid-column:1/-1}.av img{width:100%;height:100%;border-radius:50%;object-fit:cover}#mod{position:fixed;inset:0;background:#000c;display:none;place-items:center;z-index:20}#mod.on{display:grid}.mb{background:var(--card);border:2px solid var(--warn);border-radius:20px;padding:22px;max-width:360px;width:92%;text-align:center}.bar{height:6px;background:var(--warn);border-radius:9px;margin:12px 0;animation:cd 5s linear forwards}@keyframes cd{from{width:100%}to{width:0}}.pi{width:70px;height:70px;border-radius:50%;object-fit:cover;background:#0e1429;border:2px solid var(--line)}.btn.sm{width:auto;padding:7px 11px;font-size:12px}.hide{display:none}#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111a38;border:1px solid var(--acc);padding:10px 18px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;z-index:9}#toast.show{opacity:1}
 </style></head><body>
 <header><div class="brand">👁️ Smart<span>Attendance</span></div><div id="clock">--:--<small>--</small></div></header>
-<nav><button id="b-scan" class="on" onclick="show('scan')">📷 Attendance</button><button id="b-dash" onclick="show('dash')">📊 Dashboard</button><button id="b-work" onclick="show('work')">👥 Workers</button></nav>
+<nav><button id="b-scan" class="on" onclick="show('scan')">📷 Attendance</button><button id="b-dash" onclick="show('dash')">📊 Dashboard</button><button id="b-work" onclick="show('work')">👥 Workers</button><button id="b-pay" onclick="show('pay')">💰 Payroll</button></nav>
 
 <!-- SCAN -->
 <section id="t-scan"><div class="grid two">
@@ -50,6 +50,7 @@ input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);ba
 
 <!-- DASH -->
 <section id="t-dash" class="hide">
+ <div class="card" style="margin-bottom:12px"><label>Date (kisi bhi din ka record dekhein)</label><input id="dd" type="date" onchange="loadDash()"></div>
  <div class="stats"><div class="stat"><b id="s1">0</b><span>Total</span></div><div class="stat"><b id="s2" style="color:var(--ok)">0</b><span>Present</span></div><div class="stat"><b id="s3" style="color:var(--warn)">0</b><span>Late</span></div><div class="stat"><b id="s4" style="color:var(--bad)">0</b><span>Absent</span></div></div>
  <div class="card" style="padding:0" id="dlist"></div></section>
 
@@ -62,18 +63,27 @@ input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);ba
     <div><label>Designation</label><input id="wd" list="dl" placeholder="Doctor, Graphic Designer..."></div><div><label>Department</label><input id="wp"></div>
     <div><label>Shift 1 Start</label><input id="a1" type="time"></div><div><label>Shift 1 End</label><input id="b1" type="time"></div>
     <div><label>Shift 2 Start (double shift)</label><input id="a2" type="time"></div><div><label>Shift 2 End</label><input id="b2" type="time"></div>
-    <div class="full"><label>Rest / Break (minutes)</label><input id="wr" type="number" value="60"></div>
+    <div><label>Rest / Break (minutes)</label><input id="wr" type="number" value="60"></div><div><label>Monthly Salary (Rs)</label><input id="ws" type="number" placeholder="60000"></div>
+    <div><label>Phone Number</label><input id="wph" type="tel" placeholder="03xx xxxxxxx"></div><div><label>Photo (gallery se, optional)</label><input id="pf" type="file" accept="image/*" onchange="pickPhoto(event)"></div><div class="full"><label>Address</label><input id="wad"></div><div class="full" style="display:flex;gap:12px;align-items:center"><img id="pimg" class="pi" style="visibility:hidden"><span class="mut">Face Capture karne par photo khud ban jati hai</span></div>
     <div class="full"><div class="cam" style="aspect-ratio:16/10;border-radius:14px"><video id="vid2" autoplay muted playsinline></video></div></div>
     <div class="full"><button class="btn sec" onclick="capture()">🧑 Face Capture (5 samples)</button><div class="mut" id="cap" style="margin-top:6px">Face abhi capture nahi hua</div></div>
     <div class="full"><button class="btn" onclick="save()">💾 Save Worker</button></div><div class="full"><button class="btn sec" onclick="resetForm()">Naya form</button></div></div>
    <datalist id="dl"><option>Doctor<option>Nurse<option>Graphic Designer<option>Developer<option>Accountant<option>Receptionist<option>Security Guard</datalist></div>
   <div class="card" style="padding:0"><div id="wlist"></div></div></div></div></section>
+<!-- PAYROLL -->
+<section id="t-pay" class="hide">
+ <div class="card" style="margin-bottom:12px"><div class="f"><div><label>Mahina</label><input id="pm" type="month" onchange="loadPay()"></div><div style="text-align:right"><label>Kul Payroll</label><b id="ptot" style="font-size:22px">Rs 0</b></div>
+ <div class="full"><button class="btn" onclick="monthPdf()">📄 Monthly Report PDF (sab workers)</button></div><div class="full"><button class="btn sec" onclick="paySheet()">📊 Payroll ko Sheet me save karein</button></div></div></div>
+ <div id="plist"></div></section>
+<div id="mod"><div class="mb" id="mb"></div></div>
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <script>
 const MODEL='https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-let stream,matcher,tab='scan',busy=false,streak={id:null,n:0},last={},pin='',captured=null,ready=false,editId='',cache=[],logs=[];
+let photos={},photo=null,stream,matcher,tab='scan',busy=false,streak={id:null,n:0},last={},pin='',captured=null,ready=false,editId='',cache=[],logs=[];
 const $=i=>document.getElementById(i),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const API_URL='https://script.google.com/macros/s/AKfycbx1BqX9EWj35kgrrzOE8M4nFRELIP-XH1Y7GV2XdU86bOd4l29sB3nmwq8q0MVFCNxu/exec'; // https://script.google.com/macros/s/.../exec
 async function gs(fn,...args){
@@ -87,14 +97,17 @@ const RULES=[[/doctor|^dr\b|physician|surgeon/,'#14b8a6','🩺'],[/design|graphi
 function dS(d){d=(d||'').toLowerCase();for(const r of RULES)if(r[0].test(d))return[r[1],r[2]];let h=0;for(const c of d)h=(h*31+c.charCodeAt(0))%360;return['hsl('+h+',65%,62%)','👤'];}
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2600);}
 function tick(){const d=new Date();$('clock').innerHTML=d.toLocaleTimeString('en-GB')+'<small>'+d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})+'</small>';}
-function show(t){tab=t;['scan','dash','work'].forEach(x=>{$('t-'+x).classList.toggle('hide',x!==t);$('b-'+x).classList.toggle('on',x===t)});if(t==='dash')loadDash();}
+function show(t){tab=t;['scan','dash','work','pay'].forEach(x=>{$('t-'+x).classList.toggle('hide',x!==t);$('b-'+x).classList.toggle('on',x===t)});
+ if(t==='dash')loadDash();
+ if(t==='work'&&pin&&$('admin').classList.contains('hide')){$('gate').classList.add('hide');$('admin').classList.remove('hide');loadWorkers()}
+ if(t==='pay'){if(!$('pm').value){const d=new Date();$('pm').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}loadPay()}}
 function setMsg(t){$('msg').textContent=t}
 function ring(c){$('ring').className='cam '+c}
 function beep(f){try{const a=new (window.AudioContext||webkitAudioContext)(),o=a.createOscillator();o.frequency.value=f;o.connect(a.destination);o.start();setTimeout(()=>o.stop(),140);navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
 
 async function init(){tick();setInterval(tick,1000);setInterval(()=>{tab==='dash'&&loadDash()},30000);
  try{await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)]);ready=true;setMsg('Ready ✔ Camera start karein')}catch(e){setMsg('Models load nahi hue - internet check karein')}
- try{await loadBoot()}catch(e){setMsg('Error: '+e.message)}}
+ try{await loadBoot();loadPhotos()}catch(e){setMsg('Error: '+e.message)}}
 async function loadBoot(){const ws=await gs('getBootData');cache=ws;matcher=ws.length?new faceapi.FaceMatcher(ws.map(w=>new faceapi.LabeledFaceDescriptors(w.id,w.face.map(a=>new Float32Array(a)))),0.5):null;}
 async function startCam(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});$('vid').srcObject=stream;$('vid2').srcObject=stream;$('camBtn').classList.add('hide');setMsg('Camera ke samne aayen');setInterval(scan,450)}catch(e){setMsg('Camera allow karein. Na chale to link Chrome me direct kholein.')}}
 const OPT=()=>new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:.5});
@@ -104,32 +117,92 @@ async function scan(){if(busy||tab!=='scan'||!ready||$('vid').readyState<2)retur
   const m=matcher.findBestMatch(r.descriptor);
   if(m.label==='unknown'){streak={id:null,n:0};ring('bad');setMsg('Chehra pehchana nahi gaya');return}
   streak=streak.id===m.label?{id:m.label,n:streak.n+1}:{id:m.label,n:1};ring('ok');setMsg('Verify ho raha hai...');
-  if(streak.n>=3&&Date.now()-(last[m.label]||0)>20000){last[m.label]=Date.now();const res=await gs('markAttendance',m.label);card(res);}
+  if(streak.n>=3&&Date.now()-(last[m.label]||0)>20000){last[m.label]=Date.now();await doMark(m.label);}
  }catch(e){console.error(e)}finally{busy=false}}
 function card(r){const c=$('card');
  if(!r.ok){beep(200);c.innerHTML='<div style="font-size:44px">⚠️</div><h2>'+esc(r.msg)+'</h2>';return}
  const[col,ic]=dS(r.desig);beep(r.type==='out'?520:880);
  const T={in:'✅ Check-In',out:'👋 Check-Out',already:'ℹ️ Pehle se lag chuki',done:'🏁 Shifts mukammal'}[r.type];
- let x='<div class="big">'+T+' • '+esc(r.time)+'</div>';
+ let x='<div class="big">'+T+' • '+esc(r.time)+'</div><div class="mut">📅 '+new Date().toLocaleDateString('en-GB')+'</div>';
  if(r.type==='in')x+='<div class="mut">Shift '+r.shift+' ('+esc(r.shiftTime)+')</div>'+(r.late?'<div style="color:var(--warn);font-weight:700">⏰ '+r.late+' min late</div>':'<div style="color:var(--ok);font-weight:700">On Time</div>');
  if(r.type==='out')x+='<div class="mut">Shift '+r.shift+' • Kaam: <b>'+r.worked+' hrs</b> • '+esc(r.status)+'</div>';
  if(r.msg&&r.type!=='in'&&r.type!=='out')x+='<div class="mut">'+esc(r.msg)+'</div>';
- c.innerHTML='<div class="av" style="border-color:'+col+';background:'+col+'22">'+ic+'</div><h2>'+esc(r.name)+'</h2><span class="chip" style="color:'+col+';border-color:'+col+'">'+esc(r.desig||'Staff')+(r.dept?' • '+esc(r.dept):'')+'</span>'+x;
+ c.innerHTML='<div class="av" style="width:104px;height:104px;font-size:46px;border-color:'+col+';background:'+col+'22">'+avh(r.id,col,ic)+'</div><h2>'+esc(r.name)+'</h2><span class="chip" style="color:'+col+';border-color:'+col+'">'+esc(r.desig||'Staff')+'</span>'+(r.dept?'<div class="mut">🏢 '+esc(r.dept)+'</div>':'')+x;
  if(r.type==='in'||r.type==='out'){logs.unshift('<div><span>'+ic+' '+esc(r.name)+'</span><span>'+(r.type==='in'?'IN':'OUT')+' '+esc(r.time)+'</span></div>');$('logs').innerHTML=logs.slice(0,7).join('')}}
 
-async function loadDash(){try{const d=await gs('getDashboard');$('s1').textContent=d.stats.total;$('s2').textContent=d.stats.present;$('s3').textContent=d.stats.late;$('s4').textContent=d.stats.absent;
- $('dlist').innerHTML=d.rows.map(w=>{const[c,i]=dS(w.desig);const sk=w.status.replace(' ','');return '<div class="row"><div class="av" style="border-color:'+c+';background:'+c+'22">'+i+'</div><div class="nm"><b>'+esc(w.name)+'</b><span class="mut">'+esc(w.desig)+' • '+(w.first?'In '+w.first:'-')+(w.lastOut?' • Out '+w.lastOut:'')+(w.late?' • Late '+w.late+'m':'')+(w.hours?' • '+w.hours+'h':'')+'</span></div><span class="st '+sk+'">'+w.status+(w.shifts>1&&w.status!=='Absent'?' '+w.done+'/'+w.shifts:'')+'</span></div>'}).join('')||'<div class="row mut">Koi worker nahi</div>'}catch(e){toast('Dashboard error')}}
+async function loadDash(){try{const d=await gs('getDashboard',$('dd').value);$('dd').value=d.date;$('s1').textContent=d.stats.total;$('s2').textContent=d.stats.present;$('s3').textContent=d.stats.late;$('s4').textContent=d.stats.absent;
+ $('dlist').innerHTML=d.rows.map(w=>{const[c,i]=dS(w.desig);const sk=w.status.replace(' ','');
+  const lg=w.logs.map(l=>'<div class="mut">🕘 Shift '+l.shift+': IN <b>'+esc(l.in)+'</b> → OUT <b>'+(l.out?esc(l.out):'...')+'</b>'+(l.late?' • late '+l.late+'m':'')+'</div>').join('')||'<div class="mut">Is din koi entry nahi</div>';
+  return '<div class="row"><div class="av" style="border-color:'+c+';background:'+c+'22">'+avh(w.id,c,i)+'</div><div class="nm"><b>'+esc(w.name)+'</b><div class="mut">'+esc(w.desig)+(w.dept?' • '+esc(w.dept):'')+' • 📅 '+fd(d.date)+'</div>'+lg+(w.hours?'<div class="mut">⏱ '+w.hours+' ghante</div>':'')+'</div><span class="st '+sk+'">'+w.status+(w.shifts>1&&w.status!=='Absent'?' '+w.done+'/'+w.shifts:'')+'</span></div>'}).join('')||'<div class="row mut">Koi worker nahi</div>'}catch(e){toast('Dashboard error')}}
 
 async function unlock(){pin=$('pin').value.trim();
  try{if(await gs('adminLogin',pin)){$('gate').classList.add('hide');$('admin').classList.remove('hide');loadWorkers()}else alert('Ghalat PIN. Code.gs ke CFG me jo PIN likha hai wohi daalein')}
  catch(e){alert('Error: '+e.message)}}
-async function loadWorkers(){const l=await gs('listWorkers',pin);window._w=l;$('wlist').innerHTML=l.map((w,i)=>{const[c,ic]=dS(w.desig);return '<div class="row" onclick="edit('+i+')" style="cursor:pointer"><div class="av" style="border-color:'+c+';background:'+c+'22">'+ic+'</div><div class="nm"><b>'+esc(w.name)+(w.active?'':' (inactive)')+'</b><span class="mut">'+esc(w.desig)+' • '+w.s.map(s=>s.join('-')).join(' + ')+' • '+w.hours+'h</span></div><span>'+(w.hasFace?'✅':'❌')+'</span></div>'}).join('')}
-function edit(i){const w=_w[i];editId=w.id;$('ftitle').textContent='Edit: '+w.name;$('wn').value=w.name;$('wd').value=w.desig;$('wp').value=w.dept;$('a1').value=w.s[0]?w.s[0][0]:'';$('b1').value=w.s[0]?w.s[0][1]:'';$('a2').value=w.s[1]?w.s[1][0]:'';$('b2').value=w.s[1]?w.s[1][1]:'';$('wr').value=w.rest;captured=null;$('cap').textContent=w.hasFace?'Face maujood hai (naya lene ke liye capture karein)':'Face capture nahi hua'}
-function resetForm(){editId='';captured=null;$('ftitle').textContent='Naya Worker';['wn','wd','wp','a1','b1','a2','b2'].forEach(i=>$(i).value='');$('wr').value=60;$('cap').textContent='Face abhi capture nahi hua'}
-async function capture(){if(!stream)return toast('Pehle Attendance tab me camera start karein');captured=[];let tries=0;
- while(captured.length<5&&tries++<60){$('cap').textContent='Capture '+captured.length+'/5 - seedha dekhein, thoda sar hilayen';const r=await faceapi.detectSingleFace($('vid2'),OPT()).withFaceLandmarks().withFaceDescriptor();if(r)captured.push(Array.from(r.descriptor));await sleep(600)}
- $('cap').textContent=captured.length===5?'✅ Face capture ho gaya':'❌ Face nahi mila, dobara try karein';if(captured.length<5)captured=null}
-async function save(){const w={id:editId,name:$('wn').value.trim(),desig:$('wd').value.trim(),dept:$('wp').value.trim(),s1s:$('a1').value,s1e:$('b1').value,s2s:$('a2').value,s2e:$('b2').value,rest:$('wr').value,face:captured};
- try{const r=await gs('saveWorker',pin,w);toast('Saved: '+r.id);resetForm();loadWorkers();loadBoot()}catch(e){toast(e.message||'Error')}}
+async function loadWorkers(){const l=await gs('listWorkers',pin);window._w=l;
+ const rw=(w,i)=>{const[c,ic]=dS(w.desig);return '<div class="row" '+(w.active?'onclick="edit('+i+')" style="cursor:pointer"':'')+'><div class="av" style="border-color:'+c+';background:'+c+'22">'+avh(w.id,c,ic)+'</div><div class="nm"><b>'+esc(w.name)+' '+(w.hasFace?'✅':'❌')+'</b><div class="mut">'+esc(w.desig)+(w.dept?' • '+esc(w.dept):'')+'</div><div class="mut">📞 '+esc(w.phone||'-')+' • 📍 '+esc(w.address||'-')+'</div><div class="mut">⏰ '+w.s.map(s=>s.join('-')).join(' + ')+' • '+w.hours+'h • Rs '+fmt(w.salary)+(w.left?' • Left: '+fd(w.left):'')+'</div></div>'+(w.active?'<button class="btn sec sm" onclick="event.stopPropagation();workerPdfId(\''+w.id+'\')">📄 PDF</button><button class="btn red sm" onclick="event.stopPropagation();rm('+i+')">Remove</button>':'<button class="btn sec sm" onclick="restore('+i+')">Wapas</button>')+'</div>'};
+ const a=l.map((w,i)=>w.active?rw(w,i):'').join(''),b=l.map((w,i)=>w.active?'':rw(w,i)).join('');
+ $('wlist').innerHTML=(a||'<div class="row mut">Koi worker nahi</div>')+(b?'<div class="row mut"><b>Chhor chuke workers</b></div>'+b:'')}
+async function rm(i){const w=_w[i];if(!confirm(w.name+' ko remove karein? Purana record reports me rahega.'))return;
+ try{await gs('removeWorker',pin,w.id);toast('Remove ho gaya');loadWorkers();loadBoot()}catch(e){alert('Error: '+e.message)}}
+async function restore(i){const w=_w[i];try{await gs('restoreWorker',pin,w.id);toast('Wapas active ho gaya');loadWorkers();loadBoot()}catch(e){alert('Error: '+e.message)}}
+function edit(i){const w=_w[i];editId=w.id;photo=null;$('ftitle').textContent='Edit: '+w.name;$('wn').value=w.name;$('wd').value=w.desig;$('wp').value=w.dept;$('wph').value=w.phone;$('wad').value=w.address;$('a1').value=w.s[0]?w.s[0][0]:'';$('b1').value=w.s[0]?w.s[0][1]:'';$('a2').value=w.s[1]?w.s[1][0]:'';$('b2').value=w.s[1]?w.s[1][1]:'';$('wr').value=w.rest;$('ws').value=w.salary||'';captured=null;setPimg(photos[w.id]||'');$('cap').textContent=w.hasFace?'Face maujood hai (naya lene ke liye capture karein)':'Face capture nahi hua';scrollTo(0,0)}
+function resetForm(){editId='';captured=null;photo=null;setPimg('');$('ftitle').textContent='Naya Worker';['wn','wd','wp','wph','wad','a1','b1','a2','b2'].forEach(i=>$(i).value='');$('wr').value=60;$('ws').value='';$('cap').textContent='Face abhi capture nahi hua'}
+function setPimg(u){const e=$('pimg');e.style.visibility=u?'visible':'hidden';if(u)e.src=u}
+function jpg(src,sx,sy,sw,sh){const c=document.createElement('canvas');c.width=c.height=200;c.getContext('2d').drawImage(src,sx,sy,sw,sh,0,0,200,200);let q=.7,u;do{u=c.toDataURL('image/jpeg',q);q-=.1}while(u.length>30000&&q>.2);return u}
+function pickPhoto(e){const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height);photo=jpg(im,(im.width-s)/2,(im.height-s)/2,s,s);setPimg(photo)};im.src=URL.createObjectURL(f)}
+async function capture(){if(!stream)return toast('Pehle Attendance tab me camera start karein');captured=[];let tries=0,shot=null;
+ while(captured.length<5&&tries++<60){$('cap').textContent='Capture '+captured.length+'/5 - seedha dekhein, thoda sar hilayen';const r=await faceapi.detectSingleFace($('vid2'),OPT()).withFaceLandmarks().withFaceDescriptor();
+  if(r){captured.push(Array.from(r.descriptor));if(!shot){const v=$('vid2'),b=r.detection.box,s=Math.min(b.width*2.2,v.videoWidth,v.videoHeight),cx=b.x+b.width/2,cy=b.y+b.height/2;shot=jpg(v,Math.max(0,Math.min(cx-s/2,v.videoWidth-s)),Math.max(0,Math.min(cy-s/2,v.videoHeight-s)),s,s)}}
+  await sleep(600)}
+ if(captured.length===5){photo=shot;setPimg(shot);$('cap').textContent='✅ Face aur photo capture ho gayi'}else{captured=null;$('cap').textContent='❌ Face nahi mila, dobara try karein'}}
+async function save(){const w={id:editId,name:$('wn').value.trim(),desig:$('wd').value.trim(),dept:$('wp').value.trim(),phone:$('wph').value.trim(),address:$('wad').value.trim(),s1s:$('a1').value,s1e:$('b1').value,s2s:$('a2').value,s2e:$('b2').value,rest:$('wr').value,salary:$('ws').value,face:captured,photo:photo};
+ try{const r=await gs('saveWorker',pin,w);toast('Saved: '+r.id);resetForm();loadWorkers();loadBoot();loadPhotos()}catch(e){alert('Error: '+e.message)}}
+const fmt=n=>Math.round(+n||0).toLocaleString('en-US');
+async function ensurePin(){if(pin)return true;const p=prompt('Admin PIN daalein');if(!p)return false;
+ try{if(await gs('adminLogin',p.trim())){pin=p.trim();return true}alert('Ghalat PIN')}catch(e){alert('Error: '+e.message)}return false}
+async function loadPay(){
+ if(!(await ensurePin())){$('plist').innerHTML='<div class="card mut">Payroll dekhne ke liye Admin PIN zaroori hai. Tab dobara dabayen.</div>';return}
+ $('plist').innerHTML='<div class="card mut">Load ho raha hai...</div>';
+ try{const d=await gs('getPayroll',pin,$('pm').value);window._p=d.rows;window._pt=d.total;$('ptot').textContent='Rs '+fmt(d.total);
+  $('plist').innerHTML=d.rows.map((w,i)=>{const[c,ic]=dS(w.desig);
+   return '<div class="card" style="margin-bottom:10px"><div style="display:flex;gap:10px;align-items:center"><div class="av" style="width:46px;height:46px;font-size:22px;border-width:2px;border-color:'+c+';background:'+c+'22">'+avh(w.id,c,ic)+'</div>'
+   +'<div style="flex:1;min-width:0"><b>'+esc(w.name)+(w.left?' (Left)':'')+'</b><div class="mut">'+esc(w.desig)+' • Salary Rs '+fmt(w.salary)+(w.salary?'':' ⚠️ salary set nahi')+'</div></div>'
+   +'<div style="text-align:right"><div class="mut">Net Salary</div><b style="font-size:20px;color:var(--ok)">Rs '+fmt(w.net)+'</b></div></div>'
+   +'<div class="mut" style="margin:9px 0">Present: '+w.days+' din • Absent: '+w.absent+' • Ghante: '+w.worked+' • OT: '+w.ot+'h • Late: '+w.lateMin+' min'+(w.missed?' • ⚠️ '+w.missed+' check-out missed':'')+' • Kamai: Rs '+fmt(w.earned)+'</div>'
+   +'<div class="f3"><div><label>Bonus (Rs)</label><input type="number" id="bo'+i+'" value="'+w.bonus+'"></div><div><label>Katauti / Advance (Rs)</label><input type="number" id="de'+i+'" value="'+w.ded+'"></div><div><label>Note</label><input id="no'+i+'" value="'+esc(w.note)+'"></div></div>'
+   +'<div style="display:flex;gap:8px;margin-top:8px"><button class="btn sec" onclick="saveAdj('+i+')">💾 Save</button><button class="btn" onclick="workerPdf('+i+')">📄 PDF Report</button></div></div>'}).join('')||'<div class="card mut">Koi worker nahi</div>'
+ }catch(e){$('plist').innerHTML='';alert('Error: '+e.message)}}
+async function saveAdj(i){const w=_p[i];
+ try{await gs('saveAdjust',pin,$('pm').value,w.id,$('bo'+i).value,$('de'+i).value,$('no'+i).value);toast('Save ho gaya');loadPay()}catch(e){alert('Error: '+e.message)}}
+async function paySheet(){if(!(await ensurePin()))return;
+ try{const r=await gs('createPayrollSheet',pin,$('pm').value);toast('Sheet ban gayi: '+r.name)}catch(e){alert('Error: '+e.message)}}
+async function loadPhotos(){try{photos=await gs('getPhotos')}catch(e){}}
+const avh=(id,c,ic)=>photos[id]?'<img src="'+photos[id]+'">':ic;
+const fd=d=>d?String(d).split('-').reverse().join('-'):'';
+const mName=m=>{const q=m.split('-');return new Date(q[0],q[1]-1,1).toLocaleString('en-GB',{month:'long',year:'numeric'})};
+async function doMark(id,ok){const r=await gs('markAttendance',id,!!ok);
+ if(r.type==='confirm'){if(await ask(r))return doMark(id,true);last[id]=Date.now()+10000;toast('Check-out nahi hua');return}
+ card(r)}
+function ask(r){return new Promise(res=>{const[c,ic]=dS(r.desig);
+ $('mb').innerHTML='<div class="av" style="margin:0 auto;border-color:'+c+';background:'+c+'22">'+avh(r.id,c,ic)+'</div><h2 style="margin-top:8px">'+esc(r.name)+'</h2><div class="mut">'+esc(r.desig)+'</div><p style="margin:10px 0">Shift abhi khatam nahi hui (ab '+esc(r.time)+', shift end '+esc(r.shiftEnd)+').<br><b>Kya aap ki shift khatam ho gayi hai?</b></p><div class="bar"></div><div class="f"><button class="btn" id="my">✅ Haan</button><button class="btn red" id="mn">❌ Nahi</button></div><div class="mut" style="margin-top:8px">5 second me khud band ho jayega</div>';
+ $('mod').classList.add('on');const done=v=>{clearTimeout(t);$('mod').classList.remove('on');res(v)};const t=setTimeout(()=>done(false),5000);$('my').onclick=()=>done(true);$('mn').onclick=()=>done(false)})}
+function monthPdf(){if(!window._p||!_p.length)return toast('Pehle payroll load hone dein');
+ const doc=new jspdf.jsPDF({orientation:'landscape'});doc.setFontSize(16);doc.text('Monthly Attendance & Payroll Report - '+mName($('pm').value),14,15);
+ doc.setFontSize(10);doc.text('Workers: '+_p.length+'    Total Net Payroll: Rs '+fmt(_pt)+'    Generated: '+new Date().toLocaleDateString('en-GB'),14,22);
+ doc.autoTable({startY:27,styles:{fontSize:8},headStyles:{fillColor:[15,23,42]},footStyles:{fillColor:[99,102,241]},
+  head:[['#','Photo','Name','Designation','Dept','Present','Absent','Hours','OT','Late(min)','Salary','Earned','Bonus','Deduct','Net']],bodyStyles:{minCellHeight:15,valign:'middle'},columnStyles:{1:{cellWidth:16}},didDrawCell:h=>{if(h.section==='body'&&h.column.index===1){const u=photos[_p[h.row.index].id];if(u){try{doc.addImage(u,'JPEG',h.cell.x+1.5,h.cell.y+1.5,12,12)}catch(e){}}}},
+  body:_p.map((w,i)=>[i+1,'',w.name+(w.left?' (Left)':''),w.desig,w.dept||'-',w.days,w.absent,w.worked,w.ot,w.lateMin,fmt(w.salary),fmt(w.earned),fmt(w.bonus),fmt(w.ded),fmt(w.net)]),
+  foot:[['','','TOTAL','','','','','','','','','','','',fmt(_pt)]]});
+ doc.save('Monthly-Report-'+$('pm').value+'.pdf')}
+const curMonth=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
+function workerPdf(i){return workerPdfId(_p[i].id,$('pm').value)}
+async function workerPdfId(id,month){try{const d=await gs('getWorkerReport',pin,id,month||$('pm').value||curMonth()),w=d.worker,p=d.pay,doc=new jspdf.jsPDF();
+ doc.setFillColor(15,23,42);doc.rect(0,0,210,40,'F');doc.setTextColor(255);doc.setFontSize(17);doc.text('Worker Attendance Report',14,17);doc.setFontSize(11);doc.text(mName(d.month),14,26);
+ if(w.photo){try{doc.addImage(w.photo,'JPEG',168,6,28,28)}catch(e){}}
+ doc.setTextColor(0);doc.setFontSize(14);doc.text(w.name,14,52);doc.setFontSize(10);
+ doc.text(['Designation: '+w.desig,'Department: '+(w.dept||'-'),'Phone: '+(w.phone||'-'),'Shifts: '+w.shifts+'   |   Rest: '+w.rest+' min   |   Monthly Salary: Rs '+fmt(w.salary)].concat(doc.splitTextToSize('Address: '+(w.address||'-'),180)),14,59);
+ doc.autoTable({startY:88,head:[['Present','Absent','Hours','Overtime','Late(min)','Earned','Bonus','Deduct','Net Salary']],body:[[p.days,p.absent,p.worked,p.ot,p.lateMin,fmt(p.earned),fmt(p.bonus),fmt(p.ded),fmt(p.net)]],styles:{fontSize:9},headStyles:{fillColor:[99,102,241]}});
+ doc.autoTable({startY:doc.lastAutoTable.finalY+8,head:[['Date','Shift','Check-In','Check-Out','Late (min)','Worked (hrs)','Status']],body:d.days.map(x=>[fd(x.date),x.shift,x.in,x.out||'-',x.late||0,x.worked||'-',x.status]),styles:{fontSize:9},headStyles:{fillColor:[15,23,42]}});
+ doc.save(w.name.replace(/ +/g,'_')+'-'+d.month+'.pdf')}catch(e){alert('Error: '+e.message)}}
 init();
 </script></body></html>
