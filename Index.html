@@ -1,3 +1,130 @@
 <!DOCTYPE html>
-<html><head><base target="_top"><meta charset="utf-8"></head>
-<body style="font-family:sans-serif;padding:30px">API chal rahi hai ✅</body></html>
+<html><head><base target="_top"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Attendance</title>
+<style>
+:root{--bg:#0b1020;--card:#141b34;--line:#232c4d;--txt:#e8ecff;--mut:#8b95b8;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--acc:#6366f1}
+*{box-sizing:border-box;margin:0}body{background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,Segoe UI,Roboto,sans-serif;padding:14px;max-width:980px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.brand{font-weight:800;font-size:19px}.brand span{color:var(--acc)}
+#clock{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}#clock small{display:block;color:var(--mut);font-weight:400;font-size:12px}
+nav{display:flex;gap:6px;background:var(--card);padding:5px;border-radius:14px;margin-bottom:14px}
+nav button{flex:1;padding:10px;border:0;border-radius:10px;background:none;color:var(--mut);font-weight:600;font-size:14px}
+nav button.on{background:var(--acc);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+.grid{display:grid;gap:14px;grid-template-columns:1fr}@media(min-width:760px){.grid.two{grid-template-columns:1.1fr 1fr}}
+.cam{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:4/3;border:3px solid var(--line);transition:.25s}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.cam.ok{border-color:var(--ok);box-shadow:0 0 28px #22c55e55}.cam.bad{border-color:var(--bad)}
+.cam:after{content:"";position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#818cf8,transparent);animation:sc 2.2s infinite ease-in-out}
+@keyframes sc{0%,100%{top:6%}50%{top:94%}}
+#msg{text-align:center;color:var(--mut);margin:10px 0 2px;min-height:22px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:12px;padding:11px 16px;font-weight:700;font-size:14px;width:100%}
+.btn.sec{background:#222b4d}.btn.red{background:#7f1d1d}
+#card{text-align:center;min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.av{width:78px;height:78px;border-radius:50%;display:grid;place-items:center;font-size:36px;border:3px solid}
+.chip{display:inline-block;padding:3px 11px;border-radius:99px;font-size:12px;font-weight:700;border:1px solid}
+h2{font-size:21px}.mut{color:var(--mut);font-size:13px}.big{font-size:17px;font-weight:700}
+.log{margin-top:14px}.log div{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px;text-align:center}.stat b{font-size:24px;display:block}.stat span{font-size:11px;color:var(--mut)}
+.row{display:flex;align-items:center;gap:11px;padding:11px;border-bottom:1px solid var(--line)}
+.row .av{width:42px;height:42px;font-size:20px;border-width:2px;flex:none}.row .nm{flex:1;min-width:0}.row .nm b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px}
+.st.Working{background:#14532d;color:#86efac}.st.Done{background:#1e3a8a;color:#bfdbfe}.st.Absent{background:#450a0a;color:#fca5a5}.st.OnBreak{background:#78350f;color:#fde68a}
+form,.f{display:grid;grid-template-columns:1fr 1fr;gap:10px}.f .full{grid-column:1/-1}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
+input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0e1429;color:var(--txt);font-size:15px}
+.hide{display:none}#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111a38;border:1px solid var(--acc);padding:10px 18px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;z-index:9}#toast.show{opacity:1}
+</style></head><body>
+<header><div class="brand">👁️ Smart<span>Attendance</span></div><div id="clock">--:--<small>--</small></div></header>
+<nav><button id="b-scan" class="on" onclick="show('scan')">📷 Attendance</button><button id="b-dash" onclick="show('dash')">📊 Dashboard</button><button id="b-work" onclick="show('work')">👥 Workers</button></nav>
+
+<!-- SCAN -->
+<section id="t-scan"><div class="grid two">
+ <div><div class="cam" id="ring"><video id="vid" autoplay muted playsinline></video></div>
+  <div id="msg">Models load ho rahe hain...</div><button class="btn" id="camBtn" onclick="startCam()">📷 Camera Start Karein</button></div>
+ <div><div class="card" id="card"><div style="font-size:44px">🙂</div><h2>Camera ke samne aayen</h2><div class="mut">Chehra match hote hi attendance khud lag jayegi</div></div>
+ <div class="card log"><b>Aaj ke scans</b><div id="logs" class="mut" style="display:block">Abhi koi nahi</div></div></div>
+</div></section>
+
+<!-- DASH -->
+<section id="t-dash" class="hide">
+ <div class="stats"><div class="stat"><b id="s1">0</b><span>Total</span></div><div class="stat"><b id="s2" style="color:var(--ok)">0</b><span>Present</span></div><div class="stat"><b id="s3" style="color:var(--warn)">0</b><span>Late</span></div><div class="stat"><b id="s4" style="color:var(--bad)">0</b><span>Absent</span></div></div>
+ <div class="card" style="padding:0" id="dlist"></div></section>
+
+<!-- WORKERS -->
+<section id="t-work" class="hide">
+ <div id="gate" class="card"><label>Admin PIN</label><input id="pin" type="password" inputmode="numeric" placeholder="PIN"><br><br><button class="btn" onclick="unlock()">Unlock</button></div>
+ <div id="admin" class="hide"><div class="grid two">
+  <div class="card"><b id="ftitle">Naya Worker</b><br><br>
+   <div class="f"><div class="full"><label>Naam</label><input id="wn"></div>
+    <div><label>Designation</label><input id="wd" list="dl" placeholder="Doctor, Graphic Designer..."></div><div><label>Department</label><input id="wp"></div>
+    <div><label>Shift 1 Start</label><input id="a1" type="time"></div><div><label>Shift 1 End</label><input id="b1" type="time"></div>
+    <div><label>Shift 2 Start (double shift)</label><input id="a2" type="time"></div><div><label>Shift 2 End</label><input id="b2" type="time"></div>
+    <div class="full"><label>Rest / Break (minutes)</label><input id="wr" type="number" value="60"></div>
+    <div class="full"><div class="cam" style="aspect-ratio:16/10;border-radius:14px"><video id="vid2" autoplay muted playsinline></video></div></div>
+    <div class="full"><button class="btn sec" onclick="capture()">🧑 Face Capture (5 samples)</button><div class="mut" id="cap" style="margin-top:6px">Face abhi capture nahi hua</div></div>
+    <div class="full"><button class="btn" onclick="save()">💾 Save Worker</button></div><div class="full"><button class="btn sec" onclick="resetForm()">Naya form</button></div></div>
+   <datalist id="dl"><option>Doctor<option>Nurse<option>Graphic Designer<option>Developer<option>Accountant<option>Receptionist<option>Security Guard</datalist></div>
+  <div class="card" style="padding:0"><div id="wlist"></div></div></div></div></section>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+<script>
+const MODEL='https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+let stream,matcher,tab='scan',busy=false,streak={id:null,n:0},last={},pin='',captured=null,ready=false,editId='',cache=[],logs=[];
+const $=i=>document.getElementById(i),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const API_URL='YAHAN_APNA_APPS_SCRIPT_EXEC_LINK_PASTE_KAREIN'; // https://script.google.com/macros/s/.../exec
+async function gs(fn,...args){
+ const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,args})});
+ const j=await r.json(); if(!j.ok)throw new Error(j.error); return j.data;}
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const RULES=[[/doctor|^dr\b|physician|surgeon/,'#14b8a6','🩺'],[/design|graphic|artist/,'#a78bfa','🎨'],[/nurse|paramedic/,'#f472b6','💉'],[/develop|engineer|software|\bit\b/,'#60a5fa','💻'],[/account|finance/,'#fbbf24','📊'],[/reception|front/,'#fb923c','🛎️'],[/security|guard/,'#94a3b8','🛡️']];
+function dS(d){d=(d||'').toLowerCase();for(const r of RULES)if(r[0].test(d))return[r[1],r[2]];let h=0;for(const c of d)h=(h*31+c.charCodeAt(0))%360;return['hsl('+h+',65%,62%)','👤'];}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2600);}
+function tick(){const d=new Date();$('clock').innerHTML=d.toLocaleTimeString('en-GB')+'<small>'+d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})+'</small>';}
+function show(t){tab=t;['scan','dash','work'].forEach(x=>{$('t-'+x).classList.toggle('hide',x!==t);$('b-'+x).classList.toggle('on',x===t)});if(t==='dash')loadDash();}
+function setMsg(t){$('msg').textContent=t}
+function ring(c){$('ring').className='cam '+c}
+function beep(f){try{const a=new (window.AudioContext||webkitAudioContext)(),o=a.createOscillator();o.frequency.value=f;o.connect(a.destination);o.start();setTimeout(()=>o.stop(),140);navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
+
+async function init(){tick();setInterval(tick,1000);setInterval(()=>{tab==='dash'&&loadDash()},30000);
+ try{await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)]);ready=true;setMsg('Ready ✔ Camera start karein')}catch(e){setMsg('Models load nahi hue - internet check karein')}
+ await loadBoot();}
+async function loadBoot(){const ws=await gs('getBootData');cache=ws;matcher=ws.length?new faceapi.FaceMatcher(ws.map(w=>new faceapi.LabeledFaceDescriptors(w.id,w.face.map(a=>new Float32Array(a)))),0.5):null;}
+async function startCam(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});$('vid').srcObject=stream;$('vid2').srcObject=stream;$('camBtn').classList.add('hide');setMsg('Camera ke samne aayen');setInterval(scan,450)}catch(e){setMsg('Camera allow karein. Na chale to link Chrome me direct kholein.')}}
+const OPT=()=>new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:.5});
+async function scan(){if(busy||tab!=='scan'||!ready||$('vid').readyState<2)return;if(!matcher){setMsg('Koi worker registered nahi (Workers tab)');return}
+ busy=true;try{const r=await faceapi.detectSingleFace($('vid'),OPT()).withFaceLandmarks().withFaceDescriptor();
+  if(!r){streak={id:null,n:0};ring('');setMsg('Camera ke samne aayen');return}
+  const m=matcher.findBestMatch(r.descriptor);
+  if(m.label==='unknown'){streak={id:null,n:0};ring('bad');setMsg('Chehra pehchana nahi gaya');return}
+  streak=streak.id===m.label?{id:m.label,n:streak.n+1}:{id:m.label,n:1};ring('ok');setMsg('Verify ho raha hai...');
+  if(streak.n>=3&&Date.now()-(last[m.label]||0)>20000){last[m.label]=Date.now();const res=await gs('markAttendance',m.label);card(res);}
+ }catch(e){console.error(e)}finally{busy=false}}
+function card(r){const c=$('card');
+ if(!r.ok){beep(200);c.innerHTML='<div style="font-size:44px">⚠️</div><h2>'+esc(r.msg)+'</h2>';return}
+ const[col,ic]=dS(r.desig);beep(r.type==='out'?520:880);
+ const T={in:'✅ Check-In',out:'👋 Check-Out',already:'ℹ️ Pehle se lag chuki',done:'🏁 Shifts mukammal'}[r.type];
+ let x='<div class="big">'+T+' • '+esc(r.time)+'</div>';
+ if(r.type==='in')x+='<div class="mut">Shift '+r.shift+' ('+esc(r.shiftTime)+')</div>'+(r.late?'<div style="color:var(--warn);font-weight:700">⏰ '+r.late+' min late</div>':'<div style="color:var(--ok);font-weight:700">On Time</div>');
+ if(r.type==='out')x+='<div class="mut">Shift '+r.shift+' • Kaam: <b>'+r.worked+' hrs</b> • '+esc(r.status)+'</div>';
+ if(r.msg&&r.type!=='in'&&r.type!=='out')x+='<div class="mut">'+esc(r.msg)+'</div>';
+ c.innerHTML='<div class="av" style="border-color:'+col+';background:'+col+'22">'+ic+'</div><h2>'+esc(r.name)+'</h2><span class="chip" style="color:'+col+';border-color:'+col+'">'+esc(r.desig||'Staff')+(r.dept?' • '+esc(r.dept):'')+'</span>'+x;
+ if(r.type==='in'||r.type==='out'){logs.unshift('<div><span>'+ic+' '+esc(r.name)+'</span><span>'+(r.type==='in'?'IN':'OUT')+' '+esc(r.time)+'</span></div>');$('logs').innerHTML=logs.slice(0,7).join('')}}
+
+async function loadDash(){try{const d=await gs('getDashboard');$('s1').textContent=d.stats.total;$('s2').textContent=d.stats.present;$('s3').textContent=d.stats.late;$('s4').textContent=d.stats.absent;
+ $('dlist').innerHTML=d.rows.map(w=>{const[c,i]=dS(w.desig);const sk=w.status.replace(' ','');return '<div class="row"><div class="av" style="border-color:'+c+';background:'+c+'22">'+i+'</div><div class="nm"><b>'+esc(w.name)+'</b><span class="mut">'+esc(w.desig)+' • '+(w.first?'In '+w.first:'-')+(w.lastOut?' • Out '+w.lastOut:'')+(w.late?' • Late '+w.late+'m':'')+(w.hours?' • '+w.hours+'h':'')+'</span></div><span class="st '+sk+'">'+w.status+(w.shifts>1&&w.status!=='Absent'?' '+w.done+'/'+w.shifts:'')+'</span></div>'}).join('')||'<div class="row mut">Koi worker nahi</div>'}catch(e){toast('Dashboard error')}}
+
+async function unlock(){pin=$('pin').value;if(await gs('adminLogin',pin)){$('gate').classList.add('hide');$('admin').classList.remove('hide');loadWorkers()}else toast('Ghalat PIN')}
+async function loadWorkers(){const l=await gs('listWorkers',pin);window._w=l;$('wlist').innerHTML=l.map((w,i)=>{const[c,ic]=dS(w.desig);return '<div class="row" onclick="edit('+i+')" style="cursor:pointer"><div class="av" style="border-color:'+c+';background:'+c+'22">'+ic+'</div><div class="nm"><b>'+esc(w.name)+(w.active?'':' (inactive)')+'</b><span class="mut">'+esc(w.desig)+' • '+w.s.map(s=>s.join('-')).join(' + ')+' • '+w.hours+'h</span></div><span>'+(w.hasFace?'✅':'❌')+'</span></div>'}).join('')}
+function edit(i){const w=_w[i];editId=w.id;$('ftitle').textContent='Edit: '+w.name;$('wn').value=w.name;$('wd').value=w.desig;$('wp').value=w.dept;$('a1').value=w.s[0]?w.s[0][0]:'';$('b1').value=w.s[0]?w.s[0][1]:'';$('a2').value=w.s[1]?w.s[1][0]:'';$('b2').value=w.s[1]?w.s[1][1]:'';$('wr').value=w.rest;captured=null;$('cap').textContent=w.hasFace?'Face maujood hai (naya lene ke liye capture karein)':'Face capture nahi hua'}
+function resetForm(){editId='';captured=null;$('ftitle').textContent='Naya Worker';['wn','wd','wp','a1','b1','a2','b2'].forEach(i=>$(i).value='');$('wr').value=60;$('cap').textContent='Face abhi capture nahi hua'}
+async function capture(){if(!stream)return toast('Pehle Attendance tab me camera start karein');captured=[];let tries=0;
+ while(captured.length<5&&tries++<60){$('cap').textContent='Capture '+captured.length+'/5 - seedha dekhein, thoda sar hilayen';const r=await faceapi.detectSingleFace($('vid2'),OPT()).withFaceLandmarks().withFaceDescriptor();if(r)captured.push(Array.from(r.descriptor));await sleep(600)}
+ $('cap').textContent=captured.length===5?'✅ Face capture ho gaya':'❌ Face nahi mila, dobara try karein';if(captured.length<5)captured=null}
+async function save(){const w={id:editId,name:$('wn').value.trim(),desig:$('wd').value.trim(),dept:$('wp').value.trim(),s1s:$('a1').value,s1e:$('b1').value,s2s:$('a2').value,s2e:$('b2').value,rest:$('wr').value,face:captured};
+ try{const r=await gs('saveWorker',pin,w);toast('Saved: '+r.id);resetForm();loadWorkers();loadBoot()}catch(e){toast(e.message||'Error')}}
+init();
+</script></body></html>
