@@ -75,7 +75,7 @@ input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);ba
 const MODEL='https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
 let stream,matcher,tab='scan',busy=false,streak={id:null,n:0},last={},pin='',captured=null,ready=false,editId='',cache=[],logs=[];
 const $=i=>document.getElementById(i),sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const API_URL='YAHAN_APNA_APPS_SCRIPT_EXEC_LINK_PASTE_KAREIN'; // https://script.google.com/macros/s/.../exec
+const API_URL='https://script.google.com/macros/s/AKfycbx1BqX9EWj35kgrrzOE8M4nFRELIP-XH1Y7GV2XdU86bOd4l29sB3nmwq8q0MVFCNxu/exec'; // https://script.google.com/macros/s/.../exec
 async function gs(fn,...args){
  if(API_URL.indexOf('YAHAN')===0)throw new Error('API_URL me exec link paste nahi kiya');
  let r;try{r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,args})});}
