@@ -77,8 +77,11 @@ let stream,matcher,tab='scan',busy=false,streak={id:null,n:0},last={},pin='',cap
 const $=i=>document.getElementById(i),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const API_URL='YAHAN_APNA_APPS_SCRIPT_EXEC_LINK_PASTE_KAREIN'; // https://script.google.com/macros/s/.../exec
 async function gs(fn,...args){
- const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,args})});
- const j=await r.json(); if(!j.ok)throw new Error(j.error); return j.data;}
+ if(API_URL.indexOf('YAHAN')===0)throw new Error('API_URL me exec link paste nahi kiya');
+ let r;try{r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,args})});}
+ catch(e){throw new Error('Apps Script tak pahunch nahi hui (link ghalat, ya Access Anyone nahi, ya naya version deploy nahi hua)');}
+ let j;try{j=await r.json();}catch(e){throw new Error('API ne JSON nahi diya. Naya version deploy karein');}
+ if(!j.ok)throw new Error(j.error);return j.data;}
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const RULES=[[/doctor|^dr\b|physician|surgeon/,'#14b8a6','🩺'],[/design|graphic|artist/,'#a78bfa','🎨'],[/nurse|paramedic/,'#f472b6','💉'],[/develop|engineer|software|\bit\b/,'#60a5fa','💻'],[/account|finance/,'#fbbf24','📊'],[/reception|front/,'#fb923c','🛎️'],[/security|guard/,'#94a3b8','🛡️']];
 function dS(d){d=(d||'').toLowerCase();for(const r of RULES)if(r[0].test(d))return[r[1],r[2]];let h=0;for(const c of d)h=(h*31+c.charCodeAt(0))%360;return['hsl('+h+',65%,62%)','👤'];}
@@ -91,7 +94,7 @@ function beep(f){try{const a=new (window.AudioContext||webkitAudioContext)(),o=a
 
 async function init(){tick();setInterval(tick,1000);setInterval(()=>{tab==='dash'&&loadDash()},30000);
  try{await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL),faceapi.nets.faceLandmark68Net.loadFromUri(MODEL),faceapi.nets.faceRecognitionNet.loadFromUri(MODEL)]);ready=true;setMsg('Ready ✔ Camera start karein')}catch(e){setMsg('Models load nahi hue - internet check karein')}
- await loadBoot();}
+ try{await loadBoot()}catch(e){setMsg('Error: '+e.message)}}
 async function loadBoot(){const ws=await gs('getBootData');cache=ws;matcher=ws.length?new faceapi.FaceMatcher(ws.map(w=>new faceapi.LabeledFaceDescriptors(w.id,w.face.map(a=>new Float32Array(a)))),0.5):null;}
 async function startCam(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});$('vid').srcObject=stream;$('vid2').srcObject=stream;$('camBtn').classList.add('hide');setMsg('Camera ke samne aayen');setInterval(scan,450)}catch(e){setMsg('Camera allow karein. Na chale to link Chrome me direct kholein.')}}
 const OPT=()=>new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:.5});
@@ -117,7 +120,9 @@ function card(r){const c=$('card');
 async function loadDash(){try{const d=await gs('getDashboard');$('s1').textContent=d.stats.total;$('s2').textContent=d.stats.present;$('s3').textContent=d.stats.late;$('s4').textContent=d.stats.absent;
  $('dlist').innerHTML=d.rows.map(w=>{const[c,i]=dS(w.desig);const sk=w.status.replace(' ','');return '<div class="row"><div class="av" style="border-color:'+c+';background:'+c+'22">'+i+'</div><div class="nm"><b>'+esc(w.name)+'</b><span class="mut">'+esc(w.desig)+' • '+(w.first?'In '+w.first:'-')+(w.lastOut?' • Out '+w.lastOut:'')+(w.late?' • Late '+w.late+'m':'')+(w.hours?' • '+w.hours+'h':'')+'</span></div><span class="st '+sk+'">'+w.status+(w.shifts>1&&w.status!=='Absent'?' '+w.done+'/'+w.shifts:'')+'</span></div>'}).join('')||'<div class="row mut">Koi worker nahi</div>'}catch(e){toast('Dashboard error')}}
 
-async function unlock(){pin=$('pin').value;if(await gs('adminLogin',pin)){$('gate').classList.add('hide');$('admin').classList.remove('hide');loadWorkers()}else toast('Ghalat PIN')}
+async function unlock(){pin=$('pin').value.trim();
+ try{if(await gs('adminLogin',pin)){$('gate').classList.add('hide');$('admin').classList.remove('hide');loadWorkers()}else alert('Ghalat PIN. Code.gs ke CFG me jo PIN likha hai wohi daalein')}
+ catch(e){alert('Error: '+e.message)}}
 async function loadWorkers(){const l=await gs('listWorkers',pin);window._w=l;$('wlist').innerHTML=l.map((w,i)=>{const[c,ic]=dS(w.desig);return '<div class="row" onclick="edit('+i+')" style="cursor:pointer"><div class="av" style="border-color:'+c+';background:'+c+'22">'+ic+'</div><div class="nm"><b>'+esc(w.name)+(w.active?'':' (inactive)')+'</b><span class="mut">'+esc(w.desig)+' • '+w.s.map(s=>s.join('-')).join(' + ')+' • '+w.hours+'h</span></div><span>'+(w.hasFace?'✅':'❌')+'</span></div>'}).join('')}
 function edit(i){const w=_w[i];editId=w.id;$('ftitle').textContent='Edit: '+w.name;$('wn').value=w.name;$('wd').value=w.desig;$('wp').value=w.dept;$('a1').value=w.s[0]?w.s[0][0]:'';$('b1').value=w.s[0]?w.s[0][1]:'';$('a2').value=w.s[1]?w.s[1][0]:'';$('b2').value=w.s[1]?w.s[1][1]:'';$('wr').value=w.rest;captured=null;$('cap').textContent=w.hasFace?'Face maujood hai (naya lene ke liye capture karein)':'Face capture nahi hua'}
 function resetForm(){editId='';captured=null;$('ftitle').textContent='Naya Worker';['wn','wd','wp','a1','b1','a2','b2'].forEach(i=>$(i).value='');$('wr').value=60;$('cap').textContent='Face abhi capture nahi hua'}
